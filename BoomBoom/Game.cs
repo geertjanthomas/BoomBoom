@@ -17,6 +17,8 @@ public class Game
 
     public TimeSpan GameTime => _stopwatch.Elapsed;
 
+    public GameStatistics Statistics { get; }
+
     public event EventHandler? Lose;
 
     public event EventHandler? Win;
@@ -29,6 +31,16 @@ public class Game
     {
         _stopwatch = new Stopwatch();
         Configuration = configuration;
+        Statistics = new GameStatistics(configuration)
+        {
+            Win = false,
+            PlayTime = null,
+            StartDateTime = DateTime.Now,
+            StopDateTime = DateTime.MinValue,
+            CellsCleared = 0,
+            Clicks = 0
+        };
+
         var now = DateTime.Now;
         var millisecond = now.Millisecond;
         var microsecond = now.Microsecond;
@@ -130,16 +142,19 @@ public class Game
         }
 
         // Expose the clicked cell
+        Statistics.Clicks++;
         cell.Expose();
         // Check for win/loss conditions
         if (cell.HasBomb)
         {
             // Player clicked on a bomb, game over
+            Statistics.Win = false;
             Stop(Lose);
         }
         else if (!AllCells.Any(cell => !cell.HasBomb && !cell.Exposed))
         {
             // All non-bomb cells are exposed, player wins
+            Statistics.Win = true;
             Stop(Win);
         }
         else 
@@ -159,8 +174,19 @@ public class Game
     private void Stop(EventHandler? eventHandler)
     {
         _stopwatch.Stop();
+        Statistics.PlayTime = _stopwatch.Elapsed;
+        Statistics.StopDateTime = DateTime.Now;
+        Statistics.CellsCleared = AllCells.Count(c => c.Exposed);
         IsRunning = false;
         eventHandler?.Invoke(this, EventArgs.Empty);
+
+        const string StatisticsFile = "statistics.csv";
+        if (!File.Exists(StatisticsFile))
+        {
+            // Write the header line of the statistics file
+            File.WriteAllLines(StatisticsFile, ["Name,Height,Width,NumberOfBombs,Win,PlayTime,StartDateTime,StopDateTime,CellsCleared,Clicks"]);
+        }
+        File.AppendAllLines(StatisticsFile, [Statistics.ToString()]);
     }
 
     public void Pause()
