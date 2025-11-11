@@ -25,7 +25,6 @@ public class GameStatistics
 
     public override string ToString()
     {
-//        return $"Name: {Name}, Height: {Height}, Width: {Width}, NumberOfBombs: {NumberOfBombs}, Win: {Win}, PlayTime: {PlayTime}, StartDateTime: {StartDateTime}, StopDateTime: {StopDateTime}, CellsCleared: {CellsCleared}, Clicks: {Clicks}";
         return $"{Name},{Height},{Width},{NumberOfBombs},{Win},{PlayTime},{StartDateTime},{StopDateTime},{CellsCleared},{Clicks}";
     }
 
