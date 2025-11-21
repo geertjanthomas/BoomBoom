@@ -3,8 +3,19 @@ namespace BoomBoom;
 using System;
 using System.Collections.Generic;
 
-public class HighScores(IHighScoresStore? store = null)
+public class HighScores
 {
+    private readonly IHighScoresStore? _store;
+
+    public HighScores() : this(null)
+    {
+    }
+
+    public HighScores(IHighScoresStore? store)
+    {
+        _store = store;
+    }
+
     public Dictionary<string, TimeSpan> Records { get; set; } = [];
 
     public bool RecordTime(string name, TimeSpan? time)
@@ -32,9 +43,9 @@ public class HighScores(IHighScoresStore? store = null)
 
         if (flag)
         {
-            if (store is not null)
+            if (_store is not null)
             {
-                store.Save(this);
+                _store.Save(this);
             }
             else
             {

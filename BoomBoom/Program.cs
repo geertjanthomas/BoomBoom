@@ -1,4 +1,9 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using BoomBoom.Services;
 
 namespace BoomBoom;
 
@@ -13,6 +18,9 @@ internal static class Program
     [STAThread]
     static void Main()
     {
+        // Start Web API
+        Task.Run(() => StartWebApi());
+
         if (!File.Exists("highscores.json"))
         {
             Program.HighScores = Program.InitInfo();
@@ -35,6 +43,17 @@ internal static class Program
         Application.Run((Form)new MineField());
     }
 
+    private static void StartWebApi()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls("http://localhost:5000");
+        var app = builder.Build();
+
+        ApiStartup.Configure(app);
+
+        app.Run();
+    }
+
     private static HighScores InitInfo()
     {
         HighScores highScores = new HighScores();
@@ -42,5 +61,7 @@ internal static class Program
         return highScores;
     }
 }
+
+public record MoveRequest(int Column, int Row, string Action);
 
 

@@ -1,4 +1,5 @@
 ﻿using BoomBoom.Properties;
+using BoomBoom.Services;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -35,9 +36,13 @@ namespace BoomBoom
             _timer.Start();
             _currentConfiguration = new GameConfiguration();
             _game = new Game(_currentConfiguration);
+            
+            // Re-register Game (now initialized)
+            GameService.Instance.RegisterGame(_game, SynchronizationContext.Current);
         }
 
         private void BoomForm_Load(object sender, EventArgs e) => StartBeginnerGame();
+
 
         private void mnuGameBeginner_Click(object sender, EventArgs e) => StartBeginnerGame();
 
@@ -127,6 +132,7 @@ namespace BoomBoom
         private void StartGame(GameConfiguration configuration)
         {
             _game = new Game(configuration);
+            GameService.Instance.RegisterGame(_game, SynchronizationContext.Current);
             InitializeGame(_game);
             _game.Lose += (_, _) => Kaboom();
             _game.Win += (_, _) => Win();

@@ -34,7 +34,8 @@ namespace BoomBoom;
         {
             _stopwatch = new Stopwatch();
             Configuration = configuration;
-            _statisticsFilePath = statisticsFilePath;        Statistics = new GameStatistics(configuration)
+            _statisticsFilePath = statisticsFilePath;
+            Statistics = new GameStatistics(configuration)
         {
             Win = false,
             PlayTime = null,
