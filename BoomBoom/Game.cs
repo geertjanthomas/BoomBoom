@@ -3,37 +3,38 @@ using System.Diagnostics;
 
 namespace BoomBoom;
 
-public class Game
-{
-    private readonly Stopwatch _stopwatch;
-
-    public bool IsRunning { get; private set; }
-
-    public bool IsPaused { get; private set; }
-
-    public GameConfiguration Configuration { get; }
-
-    public GameCell[,] Grid { get; }
-
-    public TimeSpan GameTime => _stopwatch.Elapsed;
-
-    public GameStatistics Statistics { get; }
-
-    public event EventHandler? Lose;
-
-    public event EventHandler? Win;
-
-    public event EventHandler? Click;
-
-    private IEnumerable<GameCell> AllCells => ((IEnumerable)Grid).Cast<GameCell>();
-
-    public int FlagsPlaced => AllCells.Count(c => c.Flagged);
-
-    public Game(GameConfiguration configuration)
+    public class Game
     {
-        _stopwatch = new Stopwatch();
-        Configuration = configuration;
-        Statistics = new GameStatistics(configuration)
+        private readonly Stopwatch _stopwatch;
+        private readonly string _statisticsFilePath;
+
+        public bool IsRunning { get; private set; }
+
+        public bool IsPaused { get; private set; }
+
+        public GameConfiguration Configuration { get; }
+
+        public GameCell[,] Grid { get; }
+
+        public TimeSpan GameTime => _stopwatch.Elapsed;
+
+        public GameStatistics Statistics { get; }
+
+        public event EventHandler? Lose;
+
+        public event EventHandler? Win;
+
+        public event EventHandler? Click;
+
+        private IEnumerable<GameCell> AllCells => ((IEnumerable)Grid).Cast<GameCell>();
+
+        public int FlagsPlaced => AllCells.Count(c => c.Flagged);
+
+        public Game(GameConfiguration configuration, string statisticsFilePath = "statistics.csv")
+        {
+            _stopwatch = new Stopwatch();
+            Configuration = configuration;
+            _statisticsFilePath = statisticsFilePath;        Statistics = new GameStatistics(configuration)
         {
             Win = false,
             PlayTime = null,
@@ -162,7 +163,7 @@ public class Game
             Statistics.Win = false;
             Stop(Lose);
         }
-        else if (!AllCells.Any(cell => !cell.HasBomb && !cell.Exposed))
+        else if (AllCells.Count(c => c.Exposed && !c.HasBomb) == (Configuration.Width * Configuration.Height - Configuration.NumberOfBombs))
         {
             // All non-bomb cells are exposed, player wins
             Statistics.Win = true;
@@ -191,15 +192,14 @@ public class Game
         IsRunning = false;
         eventHandler?.Invoke(this, EventArgs.Empty);
 
-        const string StatisticsFile = "statistics.csv";
         try
         {
-            if (!File.Exists(StatisticsFile))
+            if (!File.Exists(_statisticsFilePath))
             {
                 // Write the header line of the statistics file
-                File.WriteAllLines(StatisticsFile, new[] { "Name,Height,Width,NumberOfBombs,Win,PlayTime,StartDateTime,StopDateTime,CellsCleared,Clicks" });
+                File.WriteAllLines(_statisticsFilePath, new[] { "Name,Height,Width,NumberOfBombs,Win,PlayTime,StartDateTime,StopDateTime,CellsCleared,Clicks" });
             }
-            File.AppendAllLines(StatisticsFile, new[] { Statistics.ToString() });
+            File.AppendAllLines(_statisticsFilePath, new[] { Statistics.ToString() });
         }
         catch (IOException)
         {
