@@ -28,18 +28,17 @@ def solve():
         height = data["height"]
         grid_list = data["grid"]
         
-        # Convert list to dict for easier access
         grid = {}
         for cell in grid_list:
             grid[(cell["column"], cell["row"])] = cell
 
-        moves = []
+        virtual_flags = []
 
-        # Simple logic: Single Pass
+        # Pass 1: Identify "Must be Bomb" cells (Virtual Flags)
         for c in range(width):
             for r in range(height):
                 cell = grid[(c, r)]
-                if not cell["exposed"]:
+                if not cell["exposed"]: # Only consider exposed cells for logic
                     continue
                 
                 adjacent = cell.get("adjacent")
@@ -48,45 +47,80 @@ def solve():
 
                 neighbors = get_neighbors(c, r, width, height)
                 unexposed_neighbors = []
-                flagged_neighbors = 0
+                flagged_count = 0
 
                 for nc, nr in neighbors:
                     n_cell = grid[(nc, nr)]
                     if n_cell["flagged"]:
-                        flagged_neighbors += 1
+                        flagged_count += 1
                     elif not n_cell["exposed"]:
                         unexposed_neighbors.append((nc, nr))
 
-                # Logic 1: All bombs found, rest are safe
-                if adjacent == flagged_neighbors:
+                # If remaining hidden neighbors MUST be bombs
+                if adjacent == flagged_count + len(unexposed_neighbors):
                     for uc, ur in unexposed_neighbors:
-                        if (uc, ur) not in [m[0:2] for m in moves]:
-                             moves.append((uc, ur, "click"))
+                        if (uc, ur) not in [(vf[0], vf[1]) for vf in virtual_flags]:
+                            virtual_flags.append((uc, ur))
 
-                # Logic 2: Remaining hidden neighbors must be bombs
-                if adjacent == flagged_neighbors + len(unexposed_neighbors):
+        # Pass 2: Identify "Must be Safe" cells using Real + Virtual Flags
+        click_moves = []
+
+        for c in range(width):
+            for r in range(height):
+                cell = grid[(c, r)]
+                if not cell["exposed"]: # Only consider exposed cells for logic
+                    continue
+                
+                adjacent = cell.get("adjacent")
+                if adjacent is None or adjacent == 0:
+                    continue
+
+                neighbors = get_neighbors(c, r, width, height)
+                unexposed_neighbors = []
+                flagged_count = 0
+
+                for nc, nr in neighbors:
+                    n_cell = grid[(nc, nr)]
+                    
+                    # Check if flagged OR is a virtual flag
+                    is_virtual_flag = (nc, nr) in virtual_flags
+                    
+                    if n_cell["flagged"] or is_virtual_flag:
+                        flagged_count += 1
+                    elif not n_cell["exposed"]:
+                        unexposed_neighbors.append((nc, nr))
+
+                # If all bombs are accounted for (Real or Virtual), rest are safe
+                if adjacent == flagged_count:
                     for uc, ur in unexposed_neighbors:
-                        if (uc, ur) not in [m[0:2] for m in moves]:
-                             moves.append((uc, ur, "flag"))
+                        # Don't click if we previously thought it was a bomb (contradiction check)
+                        if (uc, ur) not in virtual_flags:
+                            if (uc, ur, "click") not in click_moves:
+                                click_moves.append((uc, ur, "click"))
 
-        if moves:
-            # Prioritize clicks over flags to progress game
-            clicks = [m for m in moves if m[2] == "click"]
-            if clicks:
-                print(json.dumps(clicks[0]))
-            else:
-                print(json.dumps(moves[0]))
-        else:
-            # If no obvious logic, try to pick a random unexposed unflagged cell 
-            # (In a real solver, we'd calculate probabilities, but this is a starter)
-            # Find a corner or edge? Or just first available.
-             for c in range(width):
-                for r in range(height):
-                     cell = grid[(c,r)]
-                     if not cell["exposed"] and not cell["flagged"]:
-                         print(json.dumps([c, r, "click"]))
-                         return
-             print("No moves found")
+        # Execute Moves
+        # Priority 1: Safe Clicks
+        if click_moves:
+            print(json.dumps({"column": click_moves[0][0], "row": click_moves[0][1], "action": click_moves[0][2]}))
+            return
+
+        # Priority 2: Flagging (if no safe clicks found, we finalize the virtual flags)
+        if virtual_flags:
+            # Only flag unflagged cells
+            for vf_c, vf_r in virtual_flags:
+                n_cell = grid[(vf_c, vf_r)]
+                if not n_cell["flagged"]:
+                    print(json.dumps({"column": vf_c, "row": vf_r, "action": "flag"}))
+                    return
+
+        # Priority 3: Random (Guess)
+        for c in range(width):
+            for r in range(height):
+                cell = grid[(c,r)]
+                if not cell["exposed"] and not cell["flagged"]:
+                    print(json.dumps({"column": c, "row": r, "action": "click"}))
+                    return
+        print("No moves found")
 
     except Exception as e:
         print(f"Error: {e}")

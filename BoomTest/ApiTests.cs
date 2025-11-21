@@ -59,21 +59,40 @@ public class ApiTests
     }
 
     [TestMethod]
-    public async Task MakeMove_Click_UpdatesGame()
+    public async Task GetGame_ReturnsStatus()
     {
         var cfg = new GameConfiguration { Width = 5, Height = 5, NumberOfBombs = 0 };
         var game = new Game(cfg, _statsFile!);
         GameService.Instance.RegisterGame(game, null);
 
-        // Grid[0,0] is not exposed
-        Assert.IsFalse(game.Grid[0,0].Exposed);
+        var response = await _client!.GetAsync("/api/game");
+        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.AreEqual("Playing", content.GetProperty("status").GetString());
 
-        var move = new MoveRequest(0, 0, "click");
-        var response = await _client!.PostAsJsonAsync("/api/game/move", move);
+        // Trigger win
+        game.ClickCell(game.Grid[0,0]);
+        
+        response = await _client!.GetAsync("/api/game");
+        content = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.AreEqual("Won", content.GetProperty("status").GetString());
+    }
+
+    [TestMethod]
+    public async Task NewGame_TriggersEvent()
+    {
+        var cfg = new GameConfiguration { Width = 5, Height = 5, NumberOfBombs = 0 };
+        var game = new Game(cfg, _statsFile!);
+        GameService.Instance.RegisterGame(game, null);
+        
+        GameConfiguration? requestedConfig = null;
+        GameService.Instance.OnStartNewGame += (c) => requestedConfig = c;
+
+        var request = new NewGameRequest("Intermediate", null, null, null);
+        var response = await _client!.PostAsJsonAsync("/api/game/new", request);
         
         Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
-        
-        // Check game state directly (since GameService holds ref to same object)
-        Assert.IsTrue(game.Grid[0,0].Exposed);
+        Assert.IsNotNull(requestedConfig);
+        Assert.AreEqual("Intermediate", requestedConfig.Name);
+        Assert.AreEqual(16, requestedConfig.Width);
     }
 }

@@ -20,6 +20,8 @@ namespace BoomBoom;
 
         public GameStatistics Statistics { get; }
 
+        public bool SuppressNotifications { get; set; }
+
         public event EventHandler? Lose;
 
         public event EventHandler? Win;

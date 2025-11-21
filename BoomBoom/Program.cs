@@ -62,6 +62,7 @@ internal static class Program
     }
 }
 
-public record MoveRequest(int Column, int Row, string Action);
+public record MoveRequest(int Column, int Row, string Action, bool ShowMessage = false);
+public record NewGameRequest(string? Difficulty, int? Width, int? Height, int? Bombs);
 
 

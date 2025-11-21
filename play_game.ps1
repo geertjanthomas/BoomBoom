@@ -10,7 +10,8 @@ while ($true) {
     }
 
     if ($moveJson -match "Game is not running") {
-        Write-Output "Game is not running."
+        $statusResponse = Invoke-RestMethod -Uri "http://localhost:5000/api/game"
+        Write-Output "Game Over: $($statusResponse.Status)"
         break
     }
 

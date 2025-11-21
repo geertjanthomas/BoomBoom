@@ -11,6 +11,8 @@ public class GameService
     private Game? _game;
     private SynchronizationContext? _uiContext;
 
+    public event Action<GameConfiguration>? OnStartNewGame;
+
     public void RegisterGame(Game game, SynchronizationContext? uiContext)
     {
         _game = game;
@@ -21,6 +23,18 @@ public class GameService
     }
 
     public Game? GetGame() => _game;
+
+    public void RequestNewGame(GameConfiguration configuration)
+    {
+        if (_uiContext != null)
+        {
+            _uiContext.Post(_ => OnStartNewGame?.Invoke(configuration), null);
+        }
+        else
+        {
+            OnStartNewGame?.Invoke(configuration);
+        }
+    }
 
     public Task ExecuteOnUI(Action action)
     {

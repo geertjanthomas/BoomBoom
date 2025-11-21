@@ -81,6 +81,11 @@ public class BombTile : UserControl, IBombTile
         {
             return;
         }
+        ToggleFlag();
+    }
+
+    public void ToggleFlag()
+    {
         GameCell.Flagged = !GameCell.Flagged;
         _button.BackgroundImage = GameCell.Flagged ? (Image)Resources.redflag : NullImage;
         Flagged?.Invoke(this, GameCell);

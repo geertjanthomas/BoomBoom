@@ -39,6 +39,16 @@ namespace BoomBoom
             
             // Re-register Game (now initialized)
             GameService.Instance.RegisterGame(_game, SynchronizationContext.Current);
+            
+            GameService.Instance.OnStartNewGame += (config) =>
+            {
+                // Update configuration if provided, else restart current
+                if (!string.IsNullOrEmpty(config.Name))
+                {
+                   _currentConfiguration = config;
+                }
+                StartGame(_currentConfiguration);
+            };
         }
 
         private void BoomForm_Load(object sender, EventArgs e) => StartBeginnerGame();
@@ -141,6 +151,8 @@ namespace BoomBoom
 
         private void Win()
         {
+            if (_game.SuppressNotifications) return;
+
             if (SoundOn)
             {
                 AsyncSound(Resources.Tadaa);
@@ -158,6 +170,8 @@ namespace BoomBoom
 
         private void Kaboom()
         {
+            if (_game.SuppressNotifications) return;
+
             if (SoundOn)
             {
                 AsyncSound(Resources.ExplosionSound);

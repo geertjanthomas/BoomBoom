@@ -22,13 +22,13 @@ public static class ApiStartup
                         Row = r,
                         Exposed = cell.Exposed,
                         Flagged = cell.Flagged,
-                        HasBomb = cell.Exposed ? (bool?)cell.HasBomb : null,
                         Adjacent = cell.Exposed ? (int?)cell.NumberOfAdjacentBombs : null
                     });
                 }
             }
             
             return Results.Ok(new {
+                Status = game.IsRunning ? "Playing" : (game.Statistics.Win ? "Won" : "Lost"),
                 Running = game.IsRunning,
                 Paused = game.IsPaused,
                 Won = game.Statistics.Win,
@@ -37,6 +37,47 @@ public static class ApiStartup
                 Bombs = game.Configuration.NumberOfBombs,
                 Grid = grid
             });
+        });
+
+        app.MapPost("/api/game/new", (NewGameRequest? request) => {
+            var config = new GameConfiguration();
+            if (request != null && !string.IsNullOrEmpty(request.Difficulty))
+            {
+                switch (request.Difficulty.ToLower())
+                {
+                    case "beginner":
+                        config.Name = "Beginner";
+                        config.Width = 9;
+                        config.Height = 9;
+                        config.NumberOfBombs = 10;
+                        break;
+                    case "intermediate":
+                        config.Name = "Intermediate";
+                        config.Width = 16;
+                        config.Height = 16;
+                        config.NumberOfBombs = 40;
+                        break;
+                    case "expert":
+                        config.Name = "Expert";
+                        config.Width = 30;
+                        config.Height = 16;
+                        config.NumberOfBombs = 99;
+                        break;
+                    default:
+                        return Results.BadRequest("Invalid difficulty. Use Beginner, Intermediate, or Expert.");
+                }
+            }
+            else if (request != null && request.Width.HasValue && request.Height.HasValue && request.Bombs.HasValue)
+            {
+                 config.Name = "Custom";
+                 config.Width = request.Width.Value;
+                 config.Height = request.Height.Value;
+                 config.NumberOfBombs = request.Bombs.Value;
+            }
+            
+            // Invoke request on UI thread via event
+            GameService.Instance.RequestNewGame(config);
+            return Results.Ok();
         });
 
         app.MapPost("/api/game/move", async (MoveRequest request) => {
@@ -50,9 +91,10 @@ public static class ApiStartup
             }
 
             await GameService.Instance.ExecuteOnUI(() => {
+                game.SuppressNotifications = !request.ShowMessage;
                 var cell = game.Grid[request.Column, request.Row];
                 if (request.Action == "flag") {
-                     cell.Flagged = !cell.Flagged;
+                     cell.Tile?.ToggleFlag();
                 } else {
                     game.ClickCell(cell);
                 }
