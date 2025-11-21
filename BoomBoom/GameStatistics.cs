@@ -1,14 +1,9 @@
-using BoomBoom;
 using System.Globalization;
 
-public class GameStatistics 
-{
-    private readonly GameConfiguration _gameConfiguration;
+namespace BoomBoom;
 
-    public GameStatistics(GameConfiguration gameConfiguration)
-    {
-        _gameConfiguration = gameConfiguration;
-    }
+public class GameStatistics(GameConfiguration _gameConfiguration)
+{
 
     public bool Win { get; set; }
     public TimeSpan? PlayTime { get; set; }
@@ -34,7 +29,7 @@ public class GameStatistics
             throw new ArgumentException("Input string is null or empty.", nameof(s));
 
         // Split into comma-separated tokens, then split each token at first ": "
-        var parts = s.Split(new[] { "," }, StringSplitOptions.None);
+        var parts = s.Split([","], StringSplitOptions.None);
 
         // Build GameConfiguration
         var config = new GameConfiguration
@@ -74,15 +69,15 @@ public class GameStatistics
             throw new ArgumentException("Input string is null or empty.", nameof(s));
 
         // Split into comma-separated tokens, then split each token at first ": "
-        var parts = s.Split(new[] { ", " }, StringSplitOptions.None);
+        var parts = s.Split([", "], StringSplitOptions.None);
         var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var part in parts)
         {
             var idx = part.IndexOf(": ", StringComparison.Ordinal);
             if (idx <= 0) // no key/value separator
                 continue;
-            var key = part.Substring(0, idx).Trim();
-            var value = part.Substring(idx + 2).Trim();
+            var key = part[..idx].Trim();
+            var value = part[(idx + 2)..].Trim();
             dict[key] = value;
         }
 

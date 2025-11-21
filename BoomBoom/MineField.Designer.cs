@@ -38,6 +38,7 @@
             mnuSound = new ToolStripMenuItem();
             mnuHighScores = new ToolStripMenuItem();
             mnuTimer = new ToolStripMenuItem();
+            mnuBombCount = new ToolStripMenuItem();
             mnuRestart = new ToolStripMenuItem();
             HighScores = new Panel();
             HighScoreLabel = new Label();
@@ -48,7 +49,7 @@
             // 
             // menuStrip
             // 
-            menuStrip.Items.AddRange(new ToolStripItem[] { mnuGame, mnuTimer, mnuRestart });
+            menuStrip.Items.AddRange(new ToolStripItem[] { mnuGame, mnuTimer, mnuRestart, mnuBombCount });
             menuStrip.Location = new Point(0, 0);
             menuStrip.Name = "menuStrip";
             menuStrip.Size = new Size(800, 24);
@@ -109,6 +110,14 @@
             mnuTimer.Name = "mnuTimer";
             mnuTimer.Size = new Size(46, 20);
             mnuTimer.Text = "00:00";
+            // 
+            // mnuBombCount
+            // 
+            mnuBombCount.Alignment = ToolStripItemAlignment.Right;
+            mnuBombCount.Enabled = false;
+            mnuBombCount.Name = "mnuBombCount";
+            mnuBombCount.Size = new Size(46, 20);
+            mnuBombCount.Text = "-1";
             // 
             // mnuRestart
             // 
@@ -181,6 +190,7 @@
         private ToolStripMenuItem mnuGame;
         private ToolStripMenuItem mnuRestart;
         private ToolStripMenuItem mnuTimer;
+        private ToolStripMenuItem mnuBombCount;
         private ToolStripMenuItem mnuGameBeginner;
         private ToolStripMenuItem mnuGameIntermediate;
         private ToolStripMenuItem mnuGameExpert;

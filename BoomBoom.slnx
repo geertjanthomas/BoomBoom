@@ -5,4 +5,5 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="BoomBoom/BoomBoom.csproj" />
+  <Project Path="BoomTest/BoomTest.csproj" Id="76c55356-e291-4e14-b3ea-d368c6c2af57" />
 </Solution>

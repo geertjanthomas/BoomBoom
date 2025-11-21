@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace BoomBoom;
 
-public class BombTile : UserControl
+public class BombTile : UserControl, IBombTile
 {
     private Label? _label;
     private PictureBox? _picture;
@@ -13,6 +13,7 @@ public class BombTile : UserControl
     public GameCell GameCell { get; set; } = new GameCell();
 
     public event BombTileClick? Clicked;
+    public event BombTileClick? Flagged;
 
     public BombTile()
     {
@@ -74,11 +75,7 @@ public class BombTile : UserControl
     {
         if (e.Button == MouseButtons.Left && !GameCell.Flagged)
         {
-            var clicked = Clicked;
-            if (clicked != null)
-            {
-                clicked(this, GameCell);
-            }
+            Clicked?.Invoke(this, GameCell);
         }
         if (e.Button != MouseButtons.Right)
         {
@@ -86,6 +83,7 @@ public class BombTile : UserControl
         }
         GameCell.Flagged = !GameCell.Flagged;
         _button.BackgroundImage = GameCell.Flagged ? (Image)Resources.redflag : NullImage;
+        Flagged?.Invoke(this, GameCell);
     }
 
     private void BuildPicture(Image image)
@@ -178,3 +176,4 @@ public class BombTile : UserControl
 }
 
 public delegate void BombTileClick(BombTile sender, GameCell cell);
+

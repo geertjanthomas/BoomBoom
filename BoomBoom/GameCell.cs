@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-
+﻿
 namespace BoomBoom;
 
 public class GameCell
@@ -16,7 +15,7 @@ public class GameCell
 
     public bool Exposed { get; set; }
 
-    public BombTile? Tile { get; set; }
+    public IBombTile? Tile { get; set; }
 
     public int NumberOfAdjacentBombs
     {

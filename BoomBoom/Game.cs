@@ -27,6 +27,8 @@ public class Game
 
     private IEnumerable<GameCell> AllCells => ((IEnumerable)Grid).Cast<GameCell>();
 
+    public int FlagsPlaced => AllCells.Count(c => c.Flagged);
+
     public Game(GameConfiguration configuration)
     {
         _stopwatch = new Stopwatch();
@@ -128,17 +130,26 @@ public class Game
             // Ensure the first clicked cell is never a bomb
             if (cell.HasBomb)
             {
-                AllCells.First(c => !c.HasBomb).HasBomb = true;
+                var target = AllCells.FirstOrDefault(c => !c.HasBomb);
+                if (target is not null)
+                {
+                    target.HasBomb = true;
+                }
+                // ensure the clicked cell is safe
                 cell.HasBomb = false;
             }
             // Ensure none of the neighbours of the first clicked cell are bombs
-            foreach ((Neighbour _, GameCell gameCell) in cell.Neighbours.Where(pair => pair.Value.HasBomb))
-            {
-                gameCell.HasBomb = false;
-                AllCells
-                    .Where(c => !c.Equals(cell) && !cell.Neighbours.Values.Select(nb => nb.Id).Contains(c.Id))
-                    .First(c => !c.HasBomb).HasBomb = true;
-            }
+                foreach ((Neighbour _, GameCell gameCell) in cell.Neighbours.Where(pair => pair.Value.HasBomb))
+                {
+                    gameCell.HasBomb = false;
+                    var replacement = AllCells
+                        .Where(c => !c.Equals(cell) && !cell.Neighbours.Values.Select(nb => nb.Id).Contains(c.Id))
+                        .FirstOrDefault(c => !c.HasBomb);
+                    if (replacement is not null)
+                    {
+                        replacement.HasBomb = true;
+                    }
+                }
         }
 
         // Expose the clicked cell
@@ -181,12 +192,19 @@ public class Game
         eventHandler?.Invoke(this, EventArgs.Empty);
 
         const string StatisticsFile = "statistics.csv";
-        if (!File.Exists(StatisticsFile))
+        try
         {
-            // Write the header line of the statistics file
-            File.WriteAllLines(StatisticsFile, ["Name,Height,Width,NumberOfBombs,Win,PlayTime,StartDateTime,StopDateTime,CellsCleared,Clicks"]);
+            if (!File.Exists(StatisticsFile))
+            {
+                // Write the header line of the statistics file
+                File.WriteAllLines(StatisticsFile, new[] { "Name,Height,Width,NumberOfBombs,Win,PlayTime,StartDateTime,StopDateTime,CellsCleared,Clicks" });
+            }
+            File.AppendAllLines(StatisticsFile, new[] { Statistics.ToString() });
         }
-        File.AppendAllLines(StatisticsFile, [Statistics.ToString()]);
+        catch (IOException)
+        {
+            // Ignore IO errors when writing statistics during tests or concurrent runs
+        }
     }
 
     public void Pause()

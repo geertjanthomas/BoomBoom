@@ -1,8 +1,11 @@
-using System.Text.Json;
+namespace BoomBoom;
 
-public class HighScores
+using System;
+using System.Collections.Generic;
+
+public class HighScores(IHighScoresStore? store = null)
 {
-    public Dictionary<string, TimeSpan> Records { get; set; } = new Dictionary<string, TimeSpan>();
+    public Dictionary<string, TimeSpan> Records { get; set; } = [];
 
     public bool RecordTime(string name, TimeSpan? time)
     {
@@ -12,13 +15,13 @@ public class HighScores
         }
 
         var flag = false;
-        if (!this.Records.TryAdd(name, time.Value))
+        if (!Records.TryAdd(name, time.Value))
         {
-            TimeSpan record = this.Records[name];
+            TimeSpan record = Records[name];
             TimeSpan? nullable = time;
             if (nullable.HasValue && record > nullable.GetValueOrDefault())
             {
-                this.Records[name] = time.Value;
+                Records[name] = time.Value;
                 flag = true;
             }
         }
@@ -29,10 +32,16 @@ public class HighScores
 
         if (flag)
         {
-            File.WriteAllText("highscores.json", JsonSerializer.Serialize<HighScores>(this, new JsonSerializerOptions()
+            if (store is not null)
             {
-                WriteIndented = true
-            }));
+                store.Save(this);
+            }
+            else
+            {
+                // default behavior for existing consumers
+                var fileStore = new FileHighScoresStore();
+                fileStore.Save(this);
+            }
         }
 
         return flag;

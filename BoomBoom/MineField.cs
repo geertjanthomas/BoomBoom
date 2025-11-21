@@ -24,6 +24,7 @@ namespace BoomBoom
                 _heap[index] = new BombTile();
                 _heap[index].Size = new Size(TileSize, TileSize);
                 _heap[index].Clicked += new BombTileClick(TileClicked);
+                _heap[index].Flagged += new BombTileClick(TileFlagged);
             }
 
             InitializeComponent();
@@ -198,6 +199,7 @@ namespace BoomBoom
                 }
             }
             Controls.AddRange(controlList.ToArray());
+            mnuBombCount.Text = $"{game.Configuration.NumberOfBombs - game.FlagsPlaced}";
             ResumeLayout(false);
             PerformLayout();
         }
@@ -208,6 +210,11 @@ namespace BoomBoom
             {
                 _game.ClickCell(cell);
             }
+        }
+
+        private void TileFlagged(BombTile sender, GameCell cell)
+        {
+            mnuBombCount.Text = $"{_game.Configuration.NumberOfBombs - _game.FlagsPlaced}";
         }
 
     }
