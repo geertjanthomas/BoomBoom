@@ -13,14 +13,26 @@ def play_game_automatically():
             result = subprocess.run(["python", "solve_next_move.py"], capture_output=True, text=True, check=True)
             move_json = result.stdout.strip()
 
-            if not move_json or "No moves found" in move_json or "Game is not running" in move_json:
+            if "Game is not running" in move_json:
+                # Fetch final status to display Won/Lost like the PowerShell script does
+                try:
+                    status_res = requests.get("http://localhost:5000/api/game")
+                    if status_res.status_code == 200:
+                        print(f"Game Over: {status_res.json().get('status')}")
+                    else:
+                        print("Game Over (Could not fetch status)")
+                except:
+                    print("Game Over (Error fetching status)")
+                break
+
+            if not move_json or "No moves found" in move_json:
                 print(move_json)
                 print("Game Over or Stuck.")
                 break
 
             move = json.loads(move_json)
             
-            print(f"Executing: {move["action"]} at ({move["column"]}, {move["row"]})")
+            print(f"Executing: {move['action']} at ({move['column']}, {move['row']})")
             
             # Send move to API
             response = requests.post("http://localhost:5000/api/game/move", headers=headers, json=move)

@@ -1,5 +1,6 @@
 import requests
 import json
+import math
 
 def get_neighbors(c, r, width, height):
     neighbors = []
@@ -14,13 +15,15 @@ def get_neighbors(c, r, width, height):
 
 def solve():
     try:
-        response = requests.get("http://localhost:5000/api/game")
-        if response.status_code != 200:
-            print("Error fetching game state")
+        try:
+            response = requests.get("http://localhost:5000/api/game")
+            response.raise_for_status()
+        except requests.exceptions.RequestException:
+            print("Error connecting to API")
             return
 
         data = response.json()
-        if not data["running"]:
+        if not data.get("running"):
             print("Game is not running")
             return
 
@@ -28,98 +31,164 @@ def solve():
         height = data["height"]
         grid_list = data["grid"]
         
-        grid = {}
+        # 1. Build efficient Grid Dictionary and Lists
+        grid = {}         # Key (c,r) -> Cell Dict
+        exposed = []      # List of exposed cell dicts
+        unknown = {}      # Key (c,r) -> Cell Dict (Unexposed AND Not Flagged)
+        flags = {}        # Key (c,r) -> Cell Dict (Flagged)
+
         for cell in grid_list:
-            grid[(cell["column"], cell["row"])] = cell
+            key = (cell["column"], cell["row"])
+            grid[key] = cell
+            
+            if cell["exposed"]:
+                exposed.append(cell)
+            elif cell["flagged"]:
+                flags[key] = cell
+            else:
+                unknown[key] = cell
 
-        virtual_flags = []
-
-        # Pass 1: Identify "Must be Bomb" cells (Virtual Flags)
-        for c in range(width):
-            for r in range(height):
-                cell = grid[(c, r)]
-                if not cell["exposed"]: # Only consider exposed cells for logic
-                    continue
-                
-                adjacent = cell.get("adjacent")
-                if adjacent is None or adjacent == 0:
-                    continue
-
-                neighbors = get_neighbors(c, r, width, height)
-                unexposed_neighbors = []
-                flagged_count = 0
-
-                for nc, nr in neighbors:
-                    n_cell = grid[(nc, nr)]
-                    if n_cell["flagged"]:
-                        flagged_count += 1
-                    elif not n_cell["exposed"]:
-                        unexposed_neighbors.append((nc, nr))
-
-                # If remaining hidden neighbors MUST be bombs
-                if adjacent == flagged_count + len(unexposed_neighbors):
-                    for uc, ur in unexposed_neighbors:
-                        if (uc, ur) not in [(vf[0], vf[1]) for vf in virtual_flags]:
-                            virtual_flags.append((uc, ur))
-
-        # Pass 2: Identify "Must be Safe" cells using Real + Virtual Flags
-        click_moves = []
-
-        for c in range(width):
-            for r in range(height):
-                cell = grid[(c, r)]
-                if not cell["exposed"]: # Only consider exposed cells for logic
-                    continue
-                
-                adjacent = cell.get("adjacent")
-                if adjacent is None or adjacent == 0:
-                    continue
-
-                neighbors = get_neighbors(c, r, width, height)
-                unexposed_neighbors = []
-                flagged_count = 0
-
-                for nc, nr in neighbors:
-                    n_cell = grid[(nc, nr)]
-                    
-                    # Check if flagged OR is a virtual flag
-                    is_virtual_flag = (nc, nr) in virtual_flags
-                    
-                    if n_cell["flagged"] or is_virtual_flag:
-                        flagged_count += 1
-                    elif not n_cell["exposed"]:
-                        unexposed_neighbors.append((nc, nr))
-
-                # If all bombs are accounted for (Real or Virtual), rest are safe
-                if adjacent == flagged_count:
-                    for uc, ur in unexposed_neighbors:
-                        # Don't click if we previously thought it was a bomb (contradiction check)
-                        if (uc, ur) not in virtual_flags:
-                            if (uc, ur, "click") not in click_moves:
-                                click_moves.append((uc, ur, "click"))
-
-        # Execute Moves
-        # Priority 1: Safe Clicks
-        if click_moves:
-            print(json.dumps({"column": click_moves[0][0], "row": click_moves[0][1], "action": click_moves[0][2]}))
+        # If start of game (no exposed cells), pick center
+        if not exposed:
+            cx = width // 2
+            cy = height // 2
+            print(json.dumps({"column": cx, "row": cy, "action": "click"}))
             return
 
-        # Priority 2: Flagging (if no safe clicks found, we finalize the virtual flags)
-        if virtual_flags:
-            # Only flag unflagged cells
-            for vf_c, vf_r in virtual_flags:
-                n_cell = grid[(vf_c, vf_r)]
-                if not n_cell["flagged"]:
-                    print(json.dumps({"column": vf_c, "row": vf_r, "action": "flag"}))
-                    return
+        moves = [] # List of {"column": c, "row": r, "action": "click"|"flag"}
 
-        # Priority 3: Random (Guess)
-        for c in range(width):
-            for r in range(height):
-                cell = grid[(c,r)]
-                if not cell["exposed"] and not cell["flagged"]:
-                    print(json.dumps({"column": c, "row": r, "action": "click"}))
-                    return
+        # Pre-calculate neighbors for exposed cells
+        # Structure: key (c,r) -> { "Cell": cell, "RemBombs": int, "Unknowns": [(c,r), ...], "UnknownKeys": set((c,r)) }
+        frontier = {}
+
+        for cell in exposed:
+            # Skip empty cells (0 adjacent) or fully solved ones (handled implicitly by RemBombs=0 check logic usually, but strict 0 is trivial)
+            adjacent = cell.get("adjacent")
+            if adjacent is None or adjacent == 0:
+                continue
+
+            n_coords = get_neighbors(cell["column"], cell["row"], width, height)
+            my_unknowns = []
+            my_flags = 0
+
+            for (nc, nr) in n_coords:
+                nk = (nc, nr)
+                if nk in flags:
+                    my_flags += 1
+                elif nk in unknown:
+                    my_unknowns.append(nk)
+            
+            rem_bombs = adjacent - my_flags
+
+            # Basic Logic: 100% Safe or 100% Bomb
+            if rem_bombs == 0:
+                # All remaining unknowns are SAFE
+                for (uc, ur) in my_unknowns:
+                    moves.append({"column": uc, "row": ur, "action": "click"})
+            elif rem_bombs == len(my_unknowns):
+                # All remaining unknowns are BOMBS
+                for (uc, ur) in my_unknowns:
+                    moves.append({"column": uc, "row": ur, "action": "flag"})
+            else:
+                # Add to frontier for advanced logic
+                key = (cell["column"], cell["row"])
+                frontier[key] = {
+                    "Cell": cell,
+                    "RemBombs": rem_bombs,
+                    "Unknowns": my_unknowns,
+                    "UnknownKeys": set(my_unknowns) # Set for fast subset check
+                }
+
+        # If we found basic moves, execute the first one (Prioritize CLICKS over FLAGS)
+        click_move = next((m for m in moves if m["action"] == "click"), None)
+        if click_move:
+            print(json.dumps(click_move))
+            return
+
+        flag_move = next((m for m in moves if m["action"] == "flag"), None)
+        if flag_move:
+            print(json.dumps(flag_move))
+            return
+
+        # 2. Advanced Logic: Set/Subset Analysis
+        # Compare every pair of frontier cells
+        frontier_keys = list(frontier.keys())
+        frontier_keys.sort() # Consistent order
+
+        for i in range(len(frontier_keys)):
+            key_a = frontier_keys[i]
+            data_a = frontier[key_a]
+            
+            for j in range(i + 1, len(frontier_keys)):
+                key_b = frontier_keys[j]
+                data_b = frontier[key_b]
+
+                # Optimization: Check distance
+                if abs(key_a[0] - key_b[0]) > 2 or abs(key_a[1] - key_b[1]) > 2:
+                    continue
+
+                set_a = data_a["UnknownKeys"]
+                set_b = data_b["UnknownKeys"]
+
+                if not set_a or not set_b:
+                    continue
+
+                # Check IsSubset: A subset of B
+                if set_a.issubset(set_b):
+                    diff_bombs = data_b["RemBombs"] - data_a["RemBombs"]
+                    diff_keys = set_b - set_a
+
+                    if diff_keys:
+                        if diff_bombs == 0:
+                            # All diff cells are SAFE
+                            dk = list(diff_keys)[0]
+                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "click"}))
+                            return
+                        elif diff_bombs == len(diff_keys):
+                            # All diff cells are BOMBS
+                            dk = list(diff_keys)[0]
+                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "flag"}))
+                            return
+
+                # Check Reverse: B subset of A
+                if set_b.issubset(set_a):
+                    diff_bombs = data_a["RemBombs"] - data_b["RemBombs"]
+                    diff_keys = set_a - set_b
+
+                    if diff_keys:
+                        if diff_bombs == 0:
+                            dk = list(diff_keys)[0]
+                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "click"}))
+                            return
+                        elif diff_bombs == len(diff_keys):
+                            dk = list(diff_keys)[0]
+                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "flag"}))
+                            return
+
+        # 3. Probability Guessing
+        # Find frontier cell with lowest Bomb Density
+        best_prob = 100.0
+        best_move = None
+
+        for key in frontier_keys:
+            data = frontier[key]
+            if len(data["Unknowns"]) > 0:
+                prob = data["RemBombs"] / len(data["Unknowns"])
+                if prob < best_prob:
+                    best_prob = prob
+                    best_move = data["Unknowns"][0] # Pick first neighbor
+        
+        if best_move:
+            print(json.dumps({"column": best_move[0], "row": best_move[1], "action": "click"}))
+            return
+
+        # 4. Blind Guess (Detached Islands)
+        if unknown:
+            sorted_keys = sorted(unknown.keys())
+            k = sorted_keys[0]
+            print(json.dumps({"column": k[0], "row": k[1], "action": "click"}))
+            return
+
         print("No moves found")
 
     except Exception as e:
