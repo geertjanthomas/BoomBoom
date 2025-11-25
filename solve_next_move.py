@@ -52,7 +52,7 @@ def solve():
         if not exposed:
             cx = width // 2
             cy = height // 2
-            print(json.dumps({"column": cx, "row": cy, "action": "click"}))
+            print(json.dumps({"column": cx, "row": cy, "action": "click", "reason": "First Move"}))
             return
 
         moves = [] # List of {"column": c, "row": r, "action": "click"|"flag"}
@@ -102,11 +102,13 @@ def solve():
         # If we found basic moves, execute the first one (Prioritize CLICKS over FLAGS)
         click_move = next((m for m in moves if m["action"] == "click"), None)
         if click_move:
+            click_move["reason"] = "Basic Logic"
             print(json.dumps(click_move))
             return
 
         flag_move = next((m for m in moves if m["action"] == "flag"), None)
         if flag_move:
+            flag_move["reason"] = "Basic Logic"
             print(json.dumps(flag_move))
             return
 
@@ -142,12 +144,12 @@ def solve():
                         if diff_bombs == 0:
                             # All diff cells are SAFE
                             dk = list(diff_keys)[0]
-                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "click"}))
+                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "click", "reason": "Subset Safe"}))
                             return
                         elif diff_bombs == len(diff_keys):
                             # All diff cells are BOMBS
                             dk = list(diff_keys)[0]
-                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "flag"}))
+                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "flag", "reason": "Subset Flag"}))
                             return
 
                 # Check Reverse: B subset of A
@@ -158,11 +160,11 @@ def solve():
                     if diff_keys:
                         if diff_bombs == 0:
                             dk = list(diff_keys)[0]
-                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "click"}))
+                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "click", "reason": "Subset Safe"}))
                             return
                         elif diff_bombs == len(diff_keys):
                             dk = list(diff_keys)[0]
-                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "flag"}))
+                            print(json.dumps({"column": dk[0], "row": dk[1], "action": "flag", "reason": "Subset Flag"}))
                             return
 
         # 3. Probability Guessing
@@ -179,14 +181,14 @@ def solve():
                     best_move = data["Unknowns"][0] # Pick first neighbor
         
         if best_move:
-            print(json.dumps({"column": best_move[0], "row": best_move[1], "action": "click"}))
+            print(json.dumps({"column": best_move[0], "row": best_move[1], "action": "click", "reason": f"Probability Guess ({best_prob:.2f})"}))
             return
 
         # 4. Blind Guess (Detached Islands)
         if unknown:
             sorted_keys = sorted(unknown.keys())
             k = sorted_keys[0]
-            print(json.dumps({"column": k[0], "row": k[1], "action": "click"}))
+            print(json.dumps({"column": k[0], "row": k[1], "action": "click", "reason": "Blind Guess"}))
             return
 
         print("No moves found")

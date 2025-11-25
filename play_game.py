@@ -32,7 +32,8 @@ def play_game_automatically():
 
             move = json.loads(move_json)
             
-            print(f"Executing: {move['action']} at ({move['column']}, {move['row']})")
+            reason = move.get("reason", "N/A")
+            print(f"Executing: {move['action']} at ({move['column']}, {move['row']}) - Reason: {reason}")
             
             # Send move to API
             response = requests.post("http://localhost:5000/api/game/move", headers=headers, json=move)
