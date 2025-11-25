@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using BoomBoom;
 using BoomBoom.Services;
 using System.Net.Http.Json;
@@ -15,31 +16,40 @@ namespace BoomTest;
 [DoNotParallelize]
 public class ApiTests
 {
-    private TestServer? _server;
+    private IHost? _host;
     private HttpClient? _client;
     private string? _statsFile;
 
     [TestInitialize]
-    public void Init()
+    public async Task Init()
     {
         _statsFile = Path.GetTempFileName();
         
-        var hostBuilder = new WebHostBuilder()
-            .ConfigureServices(services => services.AddRouting())
-            .Configure(app => 
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                app.UseRouting();
-                app.UseEndpoints(endpoints => ApiStartup.Configure(endpoints));
+                webBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddRouting())
+                    .Configure(app => 
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints => ApiStartup.Configure(endpoints));
+                    });
             });
 
-        _server = new TestServer(hostBuilder);
-        _client = _server.CreateClient();
+        _host = await hostBuilder.StartAsync();
+        _client = _host.GetTestClient();
     }
 
     [TestCleanup]
-    public void Cleanup()
+    public async Task Cleanup()
     {
-        _server?.Dispose();
+        if (_host != null)
+        {
+            await _host.StopAsync();
+            _host.Dispose();
+        }
         if (File.Exists(_statsFile)) File.Delete(_statsFile!);
     }
 
