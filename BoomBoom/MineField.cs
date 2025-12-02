@@ -36,16 +36,16 @@ namespace BoomBoom
             _timer.Start();
             _currentConfiguration = new GameConfiguration();
             _game = new Game(_currentConfiguration);
-            
+
             // Re-register Game (now initialized)
             GameService.Instance.RegisterGame(_game, SynchronizationContext.Current);
-            
+
             GameService.Instance.OnStartNewGame += (config) =>
             {
                 // Update configuration if provided, else restart current
                 if (!string.IsNullOrEmpty(config.Name))
                 {
-                   _currentConfiguration = config;
+                    _currentConfiguration = config;
                 }
                 StartGame(_currentConfiguration);
             };
@@ -76,8 +76,6 @@ namespace BoomBoom
             HighScoreLabel.Text = message;
             HighScores.Show();
         }
-
-        private void HighScores_Click(object sender, EventArgs e) => HighScores.Hide();
 
         private void BoomForm_Activated(object sender, EventArgs e)
         {
@@ -162,7 +160,7 @@ namespace BoomBoom
                 Program.HighScores.RecordTime(_currentConfiguration.Name, new TimeSpan?(_game.GameTime))
                     ? $"WOOHOO!! A new record! Time: {gametime}"
                     : $"CONGRATS! You won! Time: {gametime}";
-            
+
             AsyncMessage(message);
         }
 
@@ -203,6 +201,7 @@ namespace BoomBoom
         private void InitializeGame(Game game)
         {
             SuspendLayout();
+            HighScores.Hide();
             Controls.Cast<Control>().Where(c => c is BombTile).ToList().ForEach(new Action<Control>(Controls.Remove));
             Width = game.Configuration.Width * 30 + 18;
             Height = game.Configuration.Height * 30 + 30 + 45;
@@ -226,6 +225,7 @@ namespace BoomBoom
 
         private void TileClicked(BombTile sender, GameCell cell)
         {
+            HighScores.Hide();
             if (!cell.Exposed)
             {
                 _game.ClickCell(cell);
@@ -234,8 +234,14 @@ namespace BoomBoom
 
         private void TileFlagged(BombTile sender, GameCell cell)
         {
+            HighScores.Hide();
             mnuBombCount.Text = $"{_game.Configuration.NumberOfBombs - _game.FlagsPlaced}";
         }
 
+        private void HighScores_Click(object sender, EventArgs e) => HighScores.Hide();
+
+        private void HighScoresTitle_Click(object sender, EventArgs e) => HighScores.Hide();
+
+        private void HighScoreLabel_Click(object sender, EventArgs e) => HighScores.Hide();
     }
 }
