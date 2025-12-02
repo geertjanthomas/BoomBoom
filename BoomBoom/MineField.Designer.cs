@@ -38,8 +38,8 @@
             mnuSound = new ToolStripMenuItem();
             mnuHighScores = new ToolStripMenuItem();
             mnuTimer = new ToolStripMenuItem();
-            mnuBombCount = new ToolStripMenuItem();
             mnuRestart = new ToolStripMenuItem();
+            mnuBombCount = new ToolStripMenuItem();
             HighScores = new Panel();
             HighScoreLabel = new Label();
             HighScoresTitle = new Label();
@@ -111,20 +111,20 @@
             mnuTimer.Size = new Size(46, 20);
             mnuTimer.Text = "00:00";
             // 
-            // mnuBombCount
-            // 
-            mnuBombCount.Alignment = ToolStripItemAlignment.Right;
-            mnuBombCount.Enabled = false;
-            mnuBombCount.Name = "mnuBombCount";
-            mnuBombCount.Size = new Size(46, 20);
-            mnuBombCount.Text = "-1";
-            // 
             // mnuRestart
             // 
             mnuRestart.Name = "mnuRestart";
             mnuRestart.Size = new Size(55, 20);
             mnuRestart.Text = "Restart";
             mnuRestart.Click += mnuRestart_Click;
+            // 
+            // mnuBombCount
+            // 
+            mnuBombCount.Alignment = ToolStripItemAlignment.Right;
+            mnuBombCount.Enabled = false;
+            mnuBombCount.Name = "mnuBombCount";
+            mnuBombCount.Size = new Size(30, 20);
+            mnuBombCount.Text = "-1";
             // 
             // HighScores
             // 
@@ -150,6 +150,7 @@
             HighScoreLabel.TabIndex = 1;
             HighScoreLabel.Text = "HIGH SCORES";
             HighScoreLabel.TextAlign = ContentAlignment.TopCenter;
+            HighScoreLabel.Click += HighScoreLabel_Click;
             // 
             // HighScoresTitle
             // 
@@ -161,6 +162,7 @@
             HighScoresTitle.Size = new Size(222, 38);
             HighScoresTitle.TabIndex = 0;
             HighScoresTitle.Text = "HIGH SCORES";
+            HighScoresTitle.Click += HighScoresTitle_Click;
             // 
             // MineField
             // 
