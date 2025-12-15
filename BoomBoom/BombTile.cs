@@ -1,4 +1,4 @@
-﻿using BoomBoom.Properties;
+using BoomBoom.Properties;
 using System.ComponentModel;
 
 namespace BoomBoom;
@@ -17,6 +17,9 @@ public class BombTile : UserControl, IBombTile
 
     public BombTile()
     {
+        // Ensure control auto-scales with display DPI
+        AutoScaleMode = AutoScaleMode.Dpi;
+
         _button = BuildButton();
         Controls.Add(_button);
     }
@@ -106,6 +109,20 @@ public class BombTile : UserControl, IBombTile
         _picture.Visible = true;
     }
 
+    private float GetScaledFontSize(float baseSize)
+    {
+        // baseSize is specified for 96 DPI (100%). Scale according to current device DPI.
+        try
+        {
+            return baseSize * DeviceDpi / (1.5f * 144f); // 96f;
+        }
+        catch
+        {
+            // Fallback if DeviceDpi isn't available for some reason
+            return baseSize;
+        }
+    }
+
     private void BuildLabel()
     {
         var labelColor = Color.Black;
@@ -135,10 +152,13 @@ public class BombTile : UserControl, IBombTile
             }
         }
 
+        // Use a base font size (16) and scale it according to display DPI so text appears at expected size on high-DPI displays.
+        var scaledFontSize = GetScaledFontSize(16f);
+
         _label = new Label
         {
             Dock = DockStyle.Fill,
-            Font = new Font("Segoe UI", 16f, FontStyle.Bold),
+            Font = new Font("Segoe UI", scaledFontSize, FontStyle.Bold),
             Location = new Point(0, 0),
             Name = "label",
             Size = Size,
@@ -148,6 +168,18 @@ public class BombTile : UserControl, IBombTile
             Text = GameCell.HasBomb ? "B" : (GameCell.NumberOfAdjacentBombs > 0 ? GameCell.NumberOfAdjacentBombs.ToString() : ""),
             ForeColor = labelColor
         };
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+
+        // After the control handle is created we can use DeviceDpi to adjust the label if it was built before handle creation.
+        if (_label != null)
+        {
+            var scaledFontSize = GetScaledFontSize(16f);
+            _label.Font = new Font(_label.Font.FontFamily, scaledFontSize, FontStyle.Bold);
+        }
     }
 
     public void Expose(bool endOfGame = false)

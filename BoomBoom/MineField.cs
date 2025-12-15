@@ -1,4 +1,4 @@
-﻿using BoomBoom.Properties;
+using BoomBoom.Properties;
 using BoomBoom.Services;
 using System.ComponentModel;
 using System.Data;
@@ -203,8 +203,8 @@ namespace BoomBoom
             SuspendLayout();
             HighScores.Hide();
             Controls.Cast<Control>().Where(c => c is BombTile).ToList().ForEach(new Action<Control>(Controls.Remove));
-            Width = game.Configuration.Width * 30 + 18;
-            Height = game.Configuration.Height * 30 + 30 + 45;
+            Width = (int)(game.Configuration.Width * 30.3 + 18);
+            Height = game.Configuration.Height * 31 + 30 + 45;
             var controlList = new List<Control>();
             for (int c = 0; c < game.Configuration.Width; ++c)
             {
