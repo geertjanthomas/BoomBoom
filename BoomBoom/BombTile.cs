@@ -1,5 +1,6 @@
 using BoomBoom.Properties;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace BoomBoom;
 
@@ -114,7 +115,9 @@ public class BombTile : UserControl, IBombTile
         // baseSize is specified for 96 DPI (100%). Scale according to current device DPI.
         try
         {
-            return baseSize * DeviceDpi / (1.5f * 144f); // 96f;
+            var scaledFontSize = 0.16667f * 96f; // baseSize * DeviceDpi / (1.5f * 144f); // 96f;
+            Debug.WriteLine($"Scaling font size {baseSize} to {scaledFontSize} for DeviceDpi {DeviceDpi}");
+            return scaledFontSize;
         }
         catch
         {
