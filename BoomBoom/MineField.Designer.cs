@@ -55,6 +55,8 @@
             menuStrip.Size = new Size(800, 24);
             menuStrip.TabIndex = 0;
             menuStrip.Text = "menuStrip";
+            menuStrip.BackColor = Color.FromArgb(45, 45, 48);
+            menuStrip.ForeColor = Color.WhiteSmoke;
             // 
             // mnuGame
             // 
@@ -129,7 +131,7 @@
             // HighScores
             // 
             HighScores.Anchor = AnchorStyles.None;
-            HighScores.BackColor = Color.SteelBlue;
+            HighScores.BackColor = Color.FromArgb(45, 45, 48);
             HighScores.Controls.Add(HighScoreLabel);
             HighScores.Controls.Add(HighScoresTitle);
             HighScores.Location = new Point(129, 92);
@@ -169,6 +171,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            BackColor = Color.FromArgb(32, 33, 36);
             Controls.Add(HighScores);
             Controls.Add(menuStrip);
             Icon = (Icon)resources.GetObject("$this.Icon");

@@ -31,6 +31,8 @@ public class BombTile : UserControl, IBombTile
         gameCell.Tile = this;
         gameCell.Flagged = false;
         Name = $"tile_{gameCell.Column}_{gameCell.Row}";
+        // Dark theme exposed background
+        this.BackColor = Color.FromArgb(40, 40, 40); 
         _button.Visible = true;
         _button.GameCell = GameCell;
         _button.BackgroundImage = NullImage;
@@ -51,7 +53,8 @@ public class BombTile : UserControl, IBombTile
     private ButtonPanel BuildButton()
     {
         var buttonPanel = new ButtonPanel();
-        buttonPanel.BackColor = SystemColors.ControlLight;
+        // Dark theme unexposed tile color
+        buttonPanel.BackColor = Color.FromArgb(60, 60, 60);
         buttonPanel.Margin = Padding.Empty;
         buttonPanel.Dock = DockStyle.Fill;
         buttonPanel.Location = new Point(0, 0);
@@ -59,8 +62,9 @@ public class BombTile : UserControl, IBombTile
         buttonPanel.Size = new Size(150, 150);
         buttonPanel.TabIndex = 2;
         buttonPanel.BackgroundImageLayout = ImageLayout.Stretch;
-        buttonPanel.BorderColor = Color.AliceBlue;
-        buttonPanel.ActiveBorderColor = Color.Blue;
+        // Dark theme borders
+        buttonPanel.BorderColor = Color.FromArgb(100, 50, 50);
+        buttonPanel.ActiveBorderColor = Color.FromArgb(100, 149, 237); // CornflowerBlue
         buttonPanel.MouseClick += new MouseEventHandler(button_Click);
         return buttonPanel;
     }
@@ -91,7 +95,7 @@ public class BombTile : UserControl, IBombTile
     public void ToggleFlag()
     {
         GameCell.Flagged = !GameCell.Flagged;
-        _button.BackgroundImage = GameCell.Flagged ? (Image)Resources.redflag : NullImage;
+        _button.BackgroundImage = GameCell.Flagged ? (Image)Resources.neonflag : NullImage;
         Flagged?.Invoke(this, GameCell);
     }
 
@@ -128,29 +132,29 @@ public class BombTile : UserControl, IBombTile
 
     private void BuildLabel()
     {
-        var labelColor = Color.Black;
+        var labelColor = Color.WhiteSmoke;
         if (!GameCell.HasBomb)
         {
             var numberOfAdjacentBombs = GameCell.NumberOfAdjacentBombs;
             switch (numberOfAdjacentBombs)
             {
                 case 1:
-                    labelColor = Color.Blue;
+                    labelColor = Color.LightSkyBlue;
                     break;
                 case 2:
-                    labelColor = Color.Green;
+                    labelColor = Color.LightGreen;
                     break;
                 case 3:
-                    labelColor = Color.Red;
+                    labelColor = Color.IndianRed;
                     break;
                 case 4:
-                    labelColor = Color.Purple;
+                    labelColor = Color.MediumPurple;
                     break;
                 case 5:
-                    labelColor = Color.Magenta;
+                    labelColor = Color.Orange;
                     break;
                 default:
-                    labelColor = Color.Black;
+                    labelColor = Color.WhiteSmoke;
                     break;
             }
         }
@@ -193,7 +197,7 @@ public class BombTile : UserControl, IBombTile
         {
             if (GameCell.HasBomb)
             {
-                BuildPicture((Image)Resources.BlackMine);
+                BuildPicture((Image)Resources.GlowMine);
                 Controls.Add(_picture);
             }
             else

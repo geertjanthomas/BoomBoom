@@ -111,6 +111,26 @@ namespace BoomBoom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap GlowMine {
+            get {
+                object obj = ResourceManager.GetObject("GlowMine", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap neonflag {
+            get {
+                object obj = ResourceManager.GetObject("neonflag", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap redflag {
             get {
                 object obj = ResourceManager.GetObject("redflag", resourceCulture);
@@ -124,6 +144,16 @@ namespace BoomBoom.Properties {
         internal static System.IO.UnmanagedMemoryStream Tadaa {
             get {
                 return ResourceManager.GetStream("Tadaa", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap WhiteMine {
+            get {
+                object obj = ResourceManager.GetObject("WhiteMine", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }
