@@ -14,7 +14,7 @@ namespace BoomBoom
         private readonly System.Timers.Timer _timer;
         private GameConfiguration _currentConfiguration;
         private readonly BombTile[] _heap;
-        private const int TileSize = 30;
+        private const int _tileSize = 30;
 
         public MineField()
         {
@@ -23,7 +23,7 @@ namespace BoomBoom
             for (int index = 0; index < length; ++index)
             {
                 _heap[index] = new BombTile();
-                _heap[index].Size = new Size(TileSize, TileSize);
+                _heap[index].Size = new Size(_tileSize, _tileSize);
                 _heap[index].Clicked += new BombTileClick(TileClicked);
                 _heap[index].Flagged += new BombTileClick(TileFlagged);
             }
@@ -40,15 +40,15 @@ namespace BoomBoom
             // Re-register Game (now initialized)
             GameService.Instance.RegisterGame(_game, SynchronizationContext.Current);
 
-            GameService.Instance.OnStartNewGame += (config) =>
-            {
-                // Update configuration if provided, else restart current
-                if (!string.IsNullOrEmpty(config.Name))
-                {
-                    _currentConfiguration = config;
-                }
-                StartGame(_currentConfiguration);
-            };
+            //GameService.Instance.OnStartNewGame += (config) =>
+            //{
+            //    // Update configuration if provided, else restart current
+            //    if (!string.IsNullOrEmpty(config.Name))
+            //    {
+            //        _currentConfiguration = config;
+            //    }
+            //    StartGame(_currentConfiguration);
+            //};
         }
 
         private void BoomForm_Load(object sender, EventArgs e) => StartBeginnerGame();
@@ -56,89 +56,38 @@ namespace BoomBoom
 
         private void mnuGameBeginner_Click(object sender, EventArgs e) => StartBeginnerGame();
 
-        private void mnuGameIntermediate_Click(object sender, EventArgs e)
-        {
-            StartIntermediateGame();
-        }
+        private void mnuGameIntermediate_Click(object sender, EventArgs e) => StartIntermediateGame();
 
         private void mnuGameExpert_Click(object sender, EventArgs e) => StartExpertGame();
 
-        private void mnuRestart_Click(object sender, EventArgs e)
-        {
-            StartGame(_currentConfiguration);
-        }
+        private void mnuRestart_Click(object sender, EventArgs e) => StartGame(_currentConfiguration);
 
         private void mnuHighScores_Click(object sender, EventArgs e)
         {
             HighScores.Left = (Width - HighScores.Width) / 2;
             var message = string.Join("\r\n", Program.HighScores.Records.Select(pair => $"{pair.Key}\r\n{pair.Value}"));
-            Debug.WriteLine(message);
             HighScoreLabel.Text = message;
             HighScores.Show();
         }
 
-        private void BoomForm_Activated(object sender, EventArgs e)
-        {
-            if (_game.IsRunning)
-            {
-                _game.Resume();
-            }
-        }
+        private void BoomForm_Activated(object sender, EventArgs e) => _game.Resume();
 
-        private void BoomForm_Deactivate(object sender, EventArgs e)
-        {
-            if (_game.IsRunning)
-            {
-                _game.Pause();
-            }
-        }
+        private void BoomForm_Deactivate(object sender, EventArgs e) => _game.Pause();
 
-        private void TimerOnElapsed(object? sender, ElapsedEventArgs e)
-        {
-            if (_game.IsRunning)
-            {
-                mnuTimer.Text = $"{_game.GameTime.Minutes:00}:{_game.GameTime.Seconds:00}";
-            }
-        }
+        private void TimerOnElapsed(object? sender, ElapsedEventArgs e) => mnuTimer.Text = _game.IsRunning ? $"{_game.GameTime.Minutes:00}:{_game.GameTime.Seconds:00}" : mnuTimer.Text;
 
-        private void StartBeginnerGame()
-        {
-            _currentConfiguration = new GameConfiguration()
-            {
-                Name = "Beginner",
-                Height = 9,
-                Width = 9,
-                NumberOfBombs = 10
-            };
-            StartGame(_currentConfiguration);
-        }
 
-        private void StartIntermediateGame()
-        {
-            _currentConfiguration = new GameConfiguration()
-            {
-                Name = "Intermediate",
-                Height = 16 /*0x10*/,
-                Width = 16 /*0x10*/,
-                NumberOfBombs = 40
-            };
-            StartGame(_currentConfiguration);
-        }
+        private void StartBeginnerGame() => StartGame("Beginner", 9, 9, 10);
 
-        private void StartExpertGame()
-        {
-            _currentConfiguration = new GameConfiguration()
-            {
-                Name = "Expert",
-                Height = 16 /*0x10*/,
-                Width = 30,
-                NumberOfBombs = 99
-            };
-            StartGame(_currentConfiguration);
-        }
+        private void StartIntermediateGame() => StartGame("Intermediate", 16, 16, 40);
+
+        private void StartExpertGame() => StartGame("Expert", 16, 30, 99);
+
+        private void StartGame(string name, int height, int width, int numberOfBombs) => StartGame(new GameConfiguration(name, height, width, numberOfBombs));
 
         private void StartGame(GameConfiguration configuration)
         {
+            _currentConfiguration = configuration;
             _game = new Game(configuration);
             GameService.Instance.RegisterGame(_game, SynchronizationContext.Current);
             InitializeGame(_game);
@@ -226,10 +175,7 @@ namespace BoomBoom
         private void TileClicked(BombTile sender, GameCell cell)
         {
             HighScores.Hide();
-            if (!cell.Exposed)
-            {
-                _game.ClickCell(cell);
-            }
+            _game.ClickCell(cell);
         }
 
         private void TileFlagged(BombTile sender, GameCell cell)

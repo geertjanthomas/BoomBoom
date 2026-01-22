@@ -32,7 +32,7 @@ namespace BoomTest;
     [TestMethod]
     public void FirstClick_MakesClickedCellSafe()
     {
-        var cfg = new GameConfiguration { Name = "t", Width = 2, Height = 1, NumberOfBombs = 0 };
+        var cfg = new GameConfiguration("t", 1, 2, 0);
         var game = new Game(cfg, _statisticsFile!);
 
         // force a bomb on cell 0
@@ -51,7 +51,7 @@ namespace BoomTest;
     {
         // Use a 5x5 grid with a single bomb to ensure the first click doesn't disarm the bomb
         // and the game remains running for a subsequent bomb click.
-        var cfg = new GameConfiguration { Name = "t", Width = 5, Height = 5, NumberOfBombs = 0 }; // Set to 0 to manually place bombs
+        var cfg = new GameConfiguration("t", 5, 5, 0);
         var game = new Game(cfg, _statisticsFile!);
 
         // Place the single bomb at [4,4]
@@ -83,7 +83,7 @@ namespace BoomTest;
     [TestMethod]
     public void SingleCell_NoBomb_TriggersWin()
     {
-        var cfg = new GameConfiguration { Name = "single", Width = 1, Height = 1, NumberOfBombs = 0 };
+        var cfg = new GameConfiguration("single", 1, 1, 0);
         var game = new Game(cfg, _statisticsFile!);
 
         bool won = false;
@@ -102,7 +102,7 @@ namespace BoomTest;
     [TestMethod]
     public void FlagsPlaced_ReturnsNumberOfFlaggedCells()
     {
-        var cfg = new GameConfiguration { Name = "f", Width = 2, Height = 1, NumberOfBombs = 0 };
+        var cfg = new GameConfiguration ("f", 1, 2, 0);
         var game = new Game(cfg);
 
         game.Grid[0,0].Flagged = true;
@@ -114,7 +114,7 @@ namespace BoomTest;
     [TestMethod]
     public void PauseAndResume_TogglesIsPaused()
     {
-        var cfg = new GameConfiguration { Name = "p", Width = 2, Height = 2, NumberOfBombs = 0 };
+        var cfg = new GameConfiguration ("p", 2, 2, 0);
         var game = new Game(cfg);
 
         Assert.IsFalse(game.IsPaused);

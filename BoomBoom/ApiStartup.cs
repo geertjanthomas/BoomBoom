@@ -46,22 +46,13 @@ public static class ApiStartup
                 switch (request.Difficulty.ToLower())
                 {
                     case "beginner":
-                        config.Name = "Beginner";
-                        config.Width = 9;
-                        config.Height = 9;
-                        config.NumberOfBombs = 10;
+                        config = new GameConfiguration("Beginner", 9, 9, 10);
                         break;
                     case "intermediate":
-                        config.Name = "Intermediate";
-                        config.Width = 16;
-                        config.Height = 16;
-                        config.NumberOfBombs = 40;
+                        config = new GameConfiguration("Intermediate", 16, 16, 40);
                         break;
                     case "expert":
-                        config.Name = "Expert";
-                        config.Width = 30;
-                        config.Height = 16;
-                        config.NumberOfBombs = 99;
+                        config = new GameConfiguration("Expert", 30, 16, 99);
                         break;
                     default:
                         return Results.BadRequest("Invalid difficulty. Use Beginner, Intermediate, or Expert.");
@@ -69,10 +60,7 @@ public static class ApiStartup
             }
             else if (request != null && request.Width.HasValue && request.Height.HasValue && request.Bombs.HasValue)
             {
-                 config.Name = "Custom";
-                 config.Width = request.Width.Value;
-                 config.Height = request.Height.Value;
-                 config.NumberOfBombs = request.Bombs.Value;
+                config = new GameConfiguration("Custom", request.Height.Value, request.Width.Value, request.Bombs.Value);
             }
             
             // Invoke request on UI thread via event

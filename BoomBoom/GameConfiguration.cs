@@ -1,12 +1,25 @@
-﻿namespace BoomBoom;
+namespace BoomBoom;
 
 public class GameConfiguration
 {
-    public string Name { get; set; } = string.Empty;
+    public GameConfiguration()
+    {
+        
+    }
 
-    public int Height { get; set; }
+    public GameConfiguration(string name, int height, int width, int numberOfBombs)
+    {
+        Name = name;
+        Height = height;
+        Width = width;
+        NumberOfBombs = numberOfBombs;
+    }
 
-    public int Width { get; set; }
+    public string Name { get; init; } = string.Empty;
 
-    public int NumberOfBombs { get; set; }
+    public int Height { get; }
+
+    public int Width { get; }
+
+    public int NumberOfBombs { get; }
 }

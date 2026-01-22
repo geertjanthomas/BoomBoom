@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Diagnostics;
 
 namespace BoomBoom;
@@ -212,21 +212,27 @@ namespace BoomBoom;
 
     public void Pause()
     {
-        if (IsPaused)
+        if (IsRunning)
         {
-            return;
+            if (IsPaused)
+            {
+                return;
+            }
+            _stopwatch.Stop();
+            IsPaused = true;
         }
-        _stopwatch.Stop();
-        IsPaused = true;
     }
 
     public void Resume()
     {
-        if (!IsPaused)
+        if (IsRunning)
         {
-            return;
+            if (!IsPaused)
+            {
+                return;
+            }
+            IsPaused = false;
+            _stopwatch.Start();
         }
-        IsPaused = false;
-        _stopwatch.Start();
     }
 }

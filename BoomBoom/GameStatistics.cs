@@ -32,13 +32,11 @@ public class GameStatistics(GameConfiguration _gameConfiguration)
         var parts = s.Split([","], StringSplitOptions.None);
 
         // Build GameConfiguration
-        var config = new GameConfiguration
-        {
-            Name = parts[0],
-            Height = int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var h) ? h : 0,
-            Width = int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var w) ? w : 0,
-            NumberOfBombs = int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var b) ? b : 0
-        };
+        var config = new GameConfiguration(parts[0]
+            , int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var h) ? h : 0
+            , int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var w) ? w : 0
+            , int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var b) ? b : 0
+        );
 
         var stats = new GameStatistics(config);
 
@@ -83,12 +81,12 @@ public class GameStatistics(GameConfiguration _gameConfiguration)
 
         // Build GameConfiguration
         var config = new GameConfiguration
-        {
-            Name = dict.TryGetValue("Name", out var name) ? name : string.Empty,
-            Height = dict.TryGetValue("Height", out var hstr) && int.TryParse(hstr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var h) ? h : 0,
-            Width = dict.TryGetValue("Width", out var wstr) && int.TryParse(wstr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var w) ? w : 0,
-            NumberOfBombs = dict.TryGetValue("NumberOfBombs", out var bstr) && int.TryParse(bstr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var b) ? b : 0
-        };
+        (
+            dict.TryGetValue("Name", out var name) ? name : string.Empty,
+            dict.TryGetValue("Height", out var hstr) && int.TryParse(hstr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var h) ? h : 0,
+            dict.TryGetValue("Width", out var wstr) && int.TryParse(wstr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var w) ? w : 0,
+            dict.TryGetValue("NumberOfBombs", out var bstr) && int.TryParse(bstr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var b) ? b : 0
+        );
 
         var stats = new GameStatistics(config);
 

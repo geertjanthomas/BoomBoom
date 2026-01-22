@@ -56,7 +56,7 @@ public class ApiTests
     [TestMethod]
     public async Task GetGame_ReturnsGameState()
     {
-        var cfg = new GameConfiguration { Width = 5, Height = 5, NumberOfBombs = 0 };
+        var cfg = new GameConfiguration("Test", 5, 5, 0);
         var game = new Game(cfg, _statsFile!);
         GameService.Instance.RegisterGame(game, null);
 
@@ -71,7 +71,7 @@ public class ApiTests
     [TestMethod]
     public async Task GetGame_ReturnsStatus()
     {
-        var cfg = new GameConfiguration { Width = 5, Height = 5, NumberOfBombs = 0 };
+        var cfg = new GameConfiguration("Test", 5, 5, 0);
         var game = new Game(cfg, _statsFile!);
         GameService.Instance.RegisterGame(game, null);
 
@@ -90,7 +90,7 @@ public class ApiTests
     [TestMethod]
     public async Task NewGame_TriggersEvent()
     {
-        var cfg = new GameConfiguration { Width = 5, Height = 5, NumberOfBombs = 0 };
+        var cfg = new GameConfiguration("Test", 5, 5, 0);
         var game = new Game(cfg, _statsFile!);
         GameService.Instance.RegisterGame(game, null);
         
