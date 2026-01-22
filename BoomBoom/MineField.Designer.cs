@@ -1,4 +1,4 @@
-﻿namespace BoomBoom
+namespace BoomBoom
 {
     partial class MineField
     {
@@ -49,14 +49,14 @@
             // 
             // menuStrip
             // 
+            menuStrip.BackColor = Color.FromArgb(45, 45, 48);
+            menuStrip.ForeColor = Color.WhiteSmoke;
             menuStrip.Items.AddRange(new ToolStripItem[] { mnuGame, mnuTimer, mnuRestart, mnuBombCount });
             menuStrip.Location = new Point(0, 0);
             menuStrip.Name = "menuStrip";
             menuStrip.Size = new Size(800, 24);
             menuStrip.TabIndex = 0;
             menuStrip.Text = "menuStrip";
-            menuStrip.BackColor = Color.FromArgb(45, 45, 48);
-            menuStrip.ForeColor = Color.WhiteSmoke;
             // 
             // mnuGame
             // 
@@ -170,13 +170,14 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
             BackColor = Color.FromArgb(32, 33, 36);
+            ClientSize = new Size(800, 450);
             Controls.Add(HighScores);
             Controls.Add(menuStrip);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip;
             Name = "MineField";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "BoomBoom";
             Activated += BoomForm_Activated;
             Deactivate += BoomForm_Deactivate;

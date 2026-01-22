@@ -13,13 +13,10 @@ public class GameService
 
     public event Action<GameConfiguration>? OnStartNewGame;
 
-    public void RegisterGame(Game game, SynchronizationContext? uiContext)
+    public void RegisterGame(Game game, SynchronizationContext? uiContext = null)
     {
         _game = game;
-        if (uiContext != null)
-        {
-            _uiContext = uiContext;
-        }
+        _uiContext = uiContext;
     }
 
     public Game? GetGame() => _game;

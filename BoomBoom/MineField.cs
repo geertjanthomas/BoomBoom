@@ -40,15 +40,15 @@ namespace BoomBoom
             // Re-register Game (now initialized)
             GameService.Instance.RegisterGame(_game, SynchronizationContext.Current);
 
-            //GameService.Instance.OnStartNewGame += (config) =>
-            //{
-            //    // Update configuration if provided, else restart current
-            //    if (!string.IsNullOrEmpty(config.Name))
-            //    {
-            //        _currentConfiguration = config;
-            //    }
-            //    StartGame(_currentConfiguration);
-            //};
+            GameService.Instance.OnStartNewGame += (config) =>
+            {
+                // Update configuration if provided, else restart current
+                if (!string.IsNullOrEmpty(config.Name))
+                {
+                    _currentConfiguration = config;
+                }
+                StartGame(_currentConfiguration);
+            };
         }
 
         private void BoomForm_Load(object sender, EventArgs e) => StartBeginnerGame();

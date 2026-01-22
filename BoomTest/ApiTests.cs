@@ -58,7 +58,7 @@ public class ApiTests
     {
         var cfg = new GameConfiguration("Test", 5, 5, 0);
         var game = new Game(cfg, _statsFile!);
-        GameService.Instance.RegisterGame(game, null);
+        GameService.Instance.RegisterGame(game);
 
         var response = await _client!.GetAsync("/api/game");
         response.EnsureSuccessStatusCode();
@@ -73,7 +73,7 @@ public class ApiTests
     {
         var cfg = new GameConfiguration("Test", 5, 5, 0);
         var game = new Game(cfg, _statsFile!);
-        GameService.Instance.RegisterGame(game, null);
+        GameService.Instance.RegisterGame(game);
 
         var response = await _client!.GetAsync("/api/game");
         var content = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -92,7 +92,7 @@ public class ApiTests
     {
         var cfg = new GameConfiguration("Test", 5, 5, 0);
         var game = new Game(cfg, _statsFile!);
-        GameService.Instance.RegisterGame(game, null);
+        GameService.Instance.RegisterGame(game);
         
         GameConfiguration? requestedConfig = null;
         GameService.Instance.OnStartNewGame += (c) => requestedConfig = c;
